@@ -1,8 +1,16 @@
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,17 +40,21 @@ public class TriviaGame extends JFrame implements ActionListener {
 
         // Create GUI components
         JPanel questionPanel = new JPanel(new BorderLayout());
+        questionPanel.setBackground(new Color(173, 216, 230)); 
         questionLabel = new JLabel();
         questionPanel.add(questionLabel, BorderLayout.NORTH);
         imageLabel = new JLabel();
         questionPanel.add(imageLabel, BorderLayout.CENTER);
         add(questionPanel, BorderLayout.CENTER);
-
+        
         JPanel answerPanel = new JPanel(new GridLayout(2, 2));
         answerButtons = new JButton[4];
         for (int i = 0; i < 4; i++) {
             answerButtons[i] = new JButton();
             answerButtons[i].addActionListener(this);
+            answerPanel.add(answerButtons[i]);
+            answerButtons[i].setBackground(new Color(63, 192, 207)); 
+            
             answerPanel.add(answerButtons[i]);
         }
         add(answerPanel, BorderLayout.SOUTH);
@@ -62,6 +74,8 @@ public class TriviaGame extends JFrame implements ActionListener {
         questions = new ArrayList<>();
         questions.add(new Question("Question 1", "https://image.freepik.com/vector-gratis/ilustracion-dibujos-animados-perro-feliz-humor_11460-3669.jpg", new String[]{"Answer 1", "Answer 2", "Answer 3", "Answer 4"}, 0));
         questions.add(new Question("Pene?", "https://www.kindpng.com/picc/m/485-4852609_funny-dogs-transparent-png-png-download.png", new String[]{"Sí", "No", "No", "Sí"}, 0));
+        questions.add(new Question("?", "https://cdn.discordapp.com/attachments/313985990765182986/1239298257872752761/GNVE0DDXYAAtxRd.png?ex=664269f1&is=66411871&hm=f2fc40619c4bb76ecc42ddfb03e032a22fdc67eba1f122840ac821534d3953de&", new String[]{"!", "3", "f", "?"}, 3));
+        questions.add(new Question("OMERO", "https://cdn.discordapp.com/attachments/1027717442442633226/1239386826985181185/Screenshot_1.png?ex=6642bc6e&is=66416aee&hm=6b363e92effce6a1dfdccb0ad205690d625888a68cf3241957b91f445d9d5fb1&", new String[]{"1", "2", "3", "4"}, 2));
         // Add more questions similarly
     }
 
@@ -107,7 +121,8 @@ public class TriviaGame extends JFrame implements ActionListener {
                     secondsLeft--;
                     if (secondsLeft < 0) {
                         timer.cancel();
-                        displayQuestion();
+                        endGame();
+                        //displayQuestion();
                     }
                 });
             }
@@ -115,21 +130,47 @@ public class TriviaGame extends JFrame implements ActionListener {
     }
 
     private void endGame() {
-        JOptionPane.showMessageDialog(this, "Game over! Your score: " + score);
-        startGame();
+        if (score >= (questions.size()*.75))
+        {
+            playSoundFromLocalFile("death2.wav");
+            JOptionPane.showMessageDialog(this, "Nice going, you win!" + score);
+            startGame();
+        }else
+        {
+            playSoundFromLocalFile("perder.wav");
+            JOptionPane.showMessageDialog(this, "Game over! Try harder next time! " + score);
+            startGame();
+        }
+        
     }
 
-    @Override
     public void actionPerformed(ActionEvent e) {
         JButton clickedButton = (JButton) e.getSource();
         Question currentQuestion = questions.get(currentQuestionIndex);
         int correctAnswerIndex = currentQuestion.getCorrectAnswerIndex();
         if (clickedButton.getText().equals(currentQuestion.getAnswers()[correctAnswerIndex])) {
             score++;
+            playSoundFromLocalFile("orb.wav");
+        }
+        else
+        {
+            playSoundFromLocalFile("death2.wav");
         }
         timer.cancel();
         currentQuestionIndex++;
         displayQuestion();
+    }
+
+    private void playSoundFromLocalFile(String fileName) {
+        try {
+            File file = new File(getClass().getResource("/sounds/" + fileName).toURI());
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | URISyntaxException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

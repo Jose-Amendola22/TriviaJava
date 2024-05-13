@@ -122,7 +122,6 @@ public class TriviaGame extends JFrame implements ActionListener {
                     if (secondsLeft < 0) {
                         timer.cancel();
                         endGame();
-                        //displayQuestion();
                     }
                 });
             }
@@ -132,17 +131,18 @@ public class TriviaGame extends JFrame implements ActionListener {
     private void endGame() {
         if (score >= (questions.size()*.75))
         {
-            playSoundFromLocalFile("death2.wav");
-            JOptionPane.showMessageDialog(this, "Nice going, you win!" + score);
+            playSoundFromLocalFile("ganar.wav");
+            JOptionPane.showMessageDialog(this, "Nice going, you win!\nYour score: " + score);
             startGame();
         }else
         {
             playSoundFromLocalFile("perder.wav");
-            JOptionPane.showMessageDialog(this, "Game over! Try harder next time! " + score);
+            JOptionPane.showMessageDialog(this, "Game over! Try harder next time! \nYour score: " + score);
             startGame();
         }
         
     }
+
 
     public void actionPerformed(ActionEvent e) {
         JButton clickedButton = (JButton) e.getSource();
